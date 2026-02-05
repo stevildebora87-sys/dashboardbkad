@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Realisasi Anggaran</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #f4f6f9;
+    }
+
+    header {
+      background: #fd7e14;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .container {
+      width: 90%;
+      margin: auto;
+      margin-top: 30px;
+    }
+
+    .box {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+
+    h2 {
+      color: #fd7e14;
+    }
+
+    /* Search Box */
+    #searchOPD {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      margin-top: 15px;
+      margin-bottom: 15px;
+    }
+
+    /* Table Scroll */
+    .table-wrapper {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+    }
+
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    table th {
+      background: #fd7e14;
+      color: white;
+      position: sticky;
+      top: 0;
+    }
+
+    table tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+
+    /* Button Back */
+    .back {
+      display: inline-block;
+      margin-top: 25px;
+      padding: 10px 18px;
+      background: #fd7e14;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+    }
+
+    .back:hover {
+      opacity: 0.85;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  Detail Realisasi Anggaran per OPD
+</header>
+
+<div class="container">
+  <div class="box">
+
+    <h2>Realisasi Anggaran Kabupaten Mentawai</h2>
+    <p>Berikut data realisasi otomatis seluruh OPD:</p>
+
+    <!-- SEARCH -->
+    <input type="text" id="searchOPD" placeholder="🔍 Cari OPD...">
+
+    <!-- TABLE SCROLL -->
+    <div class="table-wrapper">
+      <table id="opdTable">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>OPD</th>
+            <th>Anggaran (Rp)</th>
+            <th>Realisasi (Rp)</th>
+            <th>Persentase</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data otomatis dari JavaScript -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- BACK -->
+    <a href="index.html" class="back">⬅ Kembali ke Dashboard</a>
+
+  </div>
+</div>
+
+<script>
+  // ===============================
+  // DATA 33 OPD (BISA DIGANTI)
+  // ===============================
+  const opdData = [
+    { opd: "Dinas Kesehatan", anggaran: 25000000000, realisasi: 18500000000 },
+    { opd: "Dinas Pendidikan", anggaran: 30000000000, realisasi: 21000000000 },
+    { opd: "Dinas PU", anggaran: 40000000000, realisasi: 28000000000 },
+    { opd: "Bappeda", anggaran: 10000000000, realisasi: 8000000000 },
+    { opd: "RSUD Mentawai", anggaran: 15000000000, realisasi: 12000000000 },
+
+    // Tambahkan otomatis sampai 33 OPD
+    { opd: "Dinas Sosial", anggaran: 12000000000, realisasi: 9000000000 },
+    { opd: "Dinas Perhubungan", anggaran: 8000000000, realisasi: 5000000000 },
+    { opd: "Satpol PP", anggaran: 6000000000, realisasi: 4200000000 },
+    { opd: "BPBD", anggaran: 7000000000, realisasi: 5600000000 },
+    { opd: "Dinas Pariwisata", anggaran: 5000000000, realisasi: 3100000000 },
+
+    // Dummy OPD otomatis sampai 33
+    ...Array.from({ length: 23 }, (_, i) => ({
+      opd: "OPD Contoh " + (i + 11),
+      anggaran: 4000000000 + i * 200000000,
+      realisasi: 2500000000 + i * 150000000
+    }))
+  ];
+
+  // ===============================
+  // FORMAT RUPIAH
+  // ===============================
+  function formatRupiah(num) {
+    return num.toLocaleString("id-ID");
+  }
+
+  // ===============================
+  // RENDER TABLE OTOMATIS
+  // ===============================
+  const tbody = document.querySelector("#opdTable tbody");
+
+  function renderTable(data) {
+    tbody.innerHTML = "";
+
+    data.forEach((item, index) => {
+      const persen = ((item.realisasi / item.anggaran) * 100).toFixed(1);
+
+      const row = `
+        <tr>
+          <td>${index + 1}</td>
+          <td>${item.opd}</td>
+          <td>${formatRupiah(item.anggaran)}</td>
+          <td>${formatRupiah(item.realisasi)}</td>
+          <td>${persen}%</td>
+        </tr>
+      `;
+      tbody.innerHTML += row;
+    });
+  }
+
+  // Render pertama kali
+  renderTable(opdData);
+
+  // ===============================
+  // SEARCH FILTER
+  // ===============================
+  document.getElementById("searchOPD").addEventListener("keyup", function () {
+    const keyword = this.value.toLowerCase();
+
+    const filtered = opdData.filter(item =>
+      item.opd.toLowerCase().includes(keyword)
+    );
+
+    renderTable(filtered);
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pendapatan Per OPD</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+    }
+
+    header {
+      background: linear-gradient(to right, #0d6efd, #0a58ca);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .container {
+      width: 90%;
+      margin: auto;
+      margin-top: 20px;
+    }
+
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+      margin-bottom: 20px;
+    }
+
+    select, input {
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      margin-top: 8px;
+      width: 100%;
+    }
+
+    .chart-box {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+    }
+
+    canvas {
+      max-height: 320px;
+    }
+
+    .back {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 18px;
+      background: #0d6efd;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  Dashboard Pendapatan Per OPD <br>
+  Kabupaten Kepulauan Mentawai
+</header>
+
+<div class="container">
+
+  <!-- FILTER -->
+  <div class="box">
+    <h2>Filter Data</h2>
+
+    <!-- Tahun -->
+    <label><b>Pilih Tahun:</b></label>
+    <select id="tahunFilter">
+      <option value="2025">2025</option>
+      <option value="2026">2026</option>
+      <option value="2027">2027</option>
+    </select>
+
+    <br><br>
+
+    <!-- Search OPD -->
+    <label><b>Cari OPD:</b></label>
+    <input type="text" id="searchOPD" placeholder="Ketik nama OPD...">
+
+    <br><br>
+
+    <!-- Dropdown Scroll -->
+    <label><b>Pilih OPD:</b></label>
+    <select id="opdFilter" size="8"></select>
+  </div>
+
+  <!-- GRAFIK -->
+  <div class="box chart-box">
+    <div>
+      <h2>Grafik Pendapatan Bulanan</h2>
+      <canvas id="barChart"></canvas>
+    </div>
+
+    <div>
+      <h2>Pie Target vs Realisasi</h2>
+      <canvas id="pieChart"></canvas>
+    </div>
+  </div>
+
+  <a href="index.html" class="back">⬅ Kembali ke Dashboard</a>
+
+</div>
+
+<!-- DATA -->
+<script src="data.js"></script>
+
+<!-- CHART.JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const opdSelect = document.getElementById("opdFilter");
+  const searchInput = document.getElementById("searchOPD");
+
+  // ==============================
+  // ISI DROPDOWN OPD (33 OPD)
+  // ==============================
+  function renderDropdown(list) {
+    opdSelect.innerHTML = "";
+    list.forEach((opd, index) => {
+      const option = document.createElement("option");
+      option.value = index;
+      option.textContent = opd.nama;
+      opdSelect.appendChild(option);
+    });
+  }
+
+  renderDropdown(pendapatanData);
+
+  // ==============================
+  // SEARCH OPD
+  // ==============================
+  searchInput.addEventListener("keyup", function () {
+    const keyword = searchInput.value.toLowerCase();
+    const filtered = pendapatanData.filter(opd =>
+      opd.nama.toLowerCase().includes(keyword)
+    );
+    renderDropdown(filtered);
+  });
+
+  // ==============================
+  // CHART INIT
+  // ==============================
+  const bulanLabels = [
+    "Jan","Feb","Mar","Apr","Mei","Jun",
+    "Jul","Agu","Sep","Okt","Nov","Des"
+  ];
+
+  const barCtx = document.getElementById("barChart");
+  const pieCtx = document.getElementById("pieChart");
+
+  let barChart = new Chart(barCtx, {
+    type: "bar",
+    data: {
+      labels: bulanLabels,
+      datasets: [{
+        label: "Pendapatan Bulanan (Miliar)",
+        data: pendapatanData[0].bulanan
+      }]
+    }
+  });
+
+  let pieChart = new Chart(pieCtx, {
+    type: "pie",
+    data: {
+      labels: ["Target", "Realisasi"],
+      datasets: [{
+        data: [
+          pendapatanData[0].target,
+          pendapatanData[0].realisasi
+        ]
+      }]
+    }
+  });
+
+  // ==============================
+  // UPDATE CHART SAAT OPD DIPILIH
+  // ==============================
+  opdSelect.addEventListener("change", function () {
+    const idx = opdSelect.value;
+    const opd = pendapatanData[idx];
+
+    // Update bar chart
+    barChart.data.datasets[0].data = opd.bulanan;
+    barChart.update();
+
+    // Update pie chart
+    pieChart.data.datasets[0].data = [opd.target, opd.realisasi];
+    pieChart.update();
+  });
+</script>
+
+</body>
+</html>
